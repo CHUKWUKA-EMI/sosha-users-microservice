@@ -7,7 +7,7 @@ import * as fs from 'fs';
 config();
 
 const ORMCONFIG: TypeOrmModuleOptions = {
-  // type: 'postgres',
+  type: 'postgres' || 'cockroachdb',
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
   username: process.env.DB_USERNAME,
