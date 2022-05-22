@@ -47,7 +47,7 @@ export class AllRPCExceptionsFilter
     //save error
     this.saveErrorLog(responseBody, stackTrace);
 
-    //send response
+    
     return throwError(() => {
       return responseBody;
     });
