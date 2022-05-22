@@ -2,7 +2,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { config } from 'dotenv';
-import fs from 'fs';
+import * as fs from 'fs';
 
 config();
 
