@@ -10,6 +10,7 @@ import * as jwt from 'jsonwebtoken';
 // import Email from 'utils/email';
 import { Users } from './entities/users.paginted';
 import {
+  PasswordChange,
   PasswordResetPayload,
   RetrieveUserPayload,
 } from './interfaces/user.interfaces';
@@ -213,14 +214,20 @@ export class UsersService {
     }
   }
 
-  async logout(userId: string): Promise<string> {
+  async logout(userId: string, refreshToken: string): Promise<string> {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         throw new RpcException('User not found');
       }
-
-      await this.userRepository.update({ id: userId }, { isLoggedIn: false });
+      await this.cognitoIdp
+        .revokeToken({
+          ClientId: this.clientId,
+          ClientSecret: this.clientSecret,
+          Token: refreshToken,
+        })
+        .promise();
+      this.userRepository.update({ id: userId }, { isLoggedIn: false });
       return 'User logged out';
     } catch (error) {
       logger.log('server error', error);
@@ -265,19 +272,36 @@ export class UsersService {
     }
   }
 
-  async resetPassword({
-    email,
-    password,
-  }: PasswordResetPayload): Promise<string> {
+  async resetPassword({ email }: PasswordResetPayload): Promise<string> {
     try {
       const user = await this.userRepository.findOne({ where: { email } });
       if (!user) {
         throw new RpcException('User not found');
       }
+      await this.cognitoIdp
+        .forgotPassword({ ClientId: this.clientId, Username: email })
+        .promise();
       return 'Password reset successful';
     } catch (error) {
       logger.log('server error', error);
-      throw new RpcException('Internal server error');
+      throw new RpcException(error);
+    }
+  }
+
+  async changePassword(
+    payload: PasswordChange,
+  ): Promise<CognitoIdentityServiceProvider.ChangePasswordResponse> {
+    try {
+      return await this.cognitoIdp
+        .changePassword({
+          AccessToken: payload.accessToken,
+          PreviousPassword: payload.previousPassword,
+          ProposedPassword: payload.proposedPassword,
+        })
+        .promise();
+    } catch (error) {
+      logger.log('server error', error);
+      throw new RpcException(error);
     }
   }
 

@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationPayload } from './entities/users.paginted';
 import {
+  PasswordChange,
   PasswordResetPayload,
   RetrieveUserPayload,
 } from './interfaces/user.interfaces';
@@ -21,6 +22,11 @@ import { AllRPCExceptionsFilter } from 'all-rpc-exception-filter';
 interface FindByUsernamePayload {
   username: string;
   token?: string;
+}
+
+interface ILogout {
+  userId: string;
+  refreshToken: string;
 }
 
 @Controller()
@@ -53,8 +59,8 @@ export class UsersController {
 
   @UseFilters(new AllRPCExceptionsFilter())
   @MessagePattern({ role: 'users', cmd: 'logout' })
-  logout(@Payload() userId: string) {
-    return this.usersService.logout(userId);
+  logout(@Payload() payload: ILogout) {
+    return this.usersService.logout(payload.userId, payload.refreshToken);
   }
 
   @UseFilters(new AllRPCExceptionsFilter())
@@ -67,6 +73,12 @@ export class UsersController {
   @MessagePattern({ role: 'users', cmd: 'resetPassword' })
   resetPassword(@Payload() payload: PasswordResetPayload) {
     return this.usersService.resetPassword(payload);
+  }
+
+  @UseFilters(new AllRPCExceptionsFilter())
+  @MessagePattern({ role: 'users', cmd: 'changePassword' })
+  changePassword(@Payload() payload: PasswordChange) {
+    return this.usersService.changePassword(payload);
   }
 
   @UseFilters(new AllRPCExceptionsFilter())

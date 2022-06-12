@@ -7,5 +7,10 @@ export interface RetrieveUserPayload {
 
 export interface PasswordResetPayload {
   email: string;
-  password: string;
+}
+
+export interface PasswordChange{
+  accessToken: string;
+  previousPassword: string;
+  proposedPassword: string;
 }
