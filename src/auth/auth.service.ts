@@ -50,18 +50,17 @@ export class AuthService {
     }
   }
 
-  async VerifyToken(token: string) {
+  async VerifyToken(idToken: string) {
     try {
-      const decodedToken = jwt.decode(token, { complete: true });
+      const decodedToken = jwt.decode(idToken, { complete: true });
       const pem = this.pems[decodedToken.header.kid];
       if (!pem) {
         throw new RpcException('Invalid token');
       }
-      const response = jwt.verify(token, pem, { algorithms: ['RS256'] });
+      const response = jwt.verify(idToken, pem, { algorithms: ['RS256'] });
       return response;
     } catch (error) {
-      console.log('error', error);
-      throw new RpcException('Invalid token');
+      throw new RpcException(error);
     }
   }
 

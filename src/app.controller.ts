@@ -1,5 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Controller, HttpCode, Get, Query, UseFilters } from '@nestjs/common';
+import {
+  Controller,
+  HttpCode,
+  Get,
+  Query,
+  UseFilters,
+  Res,
+} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AllRPCExceptionsFilter } from 'all-rpc-exception-filter';
 import { AppService } from './app.service';
@@ -7,6 +14,7 @@ import { AuthService } from './auth/auth.service';
 import { UsersService } from './users/users.service';
 import { LoginUserInput } from './auth/dto/login-user.input';
 import { AuthData } from './auth/interfaces/authData.interface';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
@@ -23,10 +31,10 @@ export class AppController {
     return userData;
   }
 
-  @UseFilters(new AllRPCExceptionsFilter())
+  // @UseFilters(new AllRPCExceptionsFilter())
   @MessagePattern({ role: 'auth', cmd: 'verifyToken' })
-  validateToken(@Payload() token: string) {
-    return this.authService.VerifyToken(token);
+  validateToken(@Payload() idToken: string) {
+    return this.authService.VerifyToken(idToken);
   }
 
   @MessagePattern({ role: 'auth', cmd: 'verifyEmail' })
@@ -37,7 +45,7 @@ export class AppController {
 
   @Get('cognito_callback')
   @HttpCode(200)
-  async callback(@Query('code') code: string) {
+  async callback(@Query('code') code: string, @Res() res: Response) {
     const authData = await this.authService.exchangeGrantCodeForToken(code);
     const resData = await this.authService.VerifyToken(authData.id_token);
     const userData = {
@@ -49,6 +57,11 @@ export class AppController {
     };
     //save userDetails
     await this.userService.saveUserDetails(userData);
-    return authData;
+    // return authData;
+    res.cookie('sosha_token', authData.id_token);
+    res.cookie('cognito_accessToken', authData.access_token);
+    res.cookie('cognito_refreshToken', authData.refresh_token);
+
+    return res.redirect(`${process.env.FRONTEND_URL}/profile`);
   }
 }

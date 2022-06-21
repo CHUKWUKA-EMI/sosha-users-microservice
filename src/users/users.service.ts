@@ -31,6 +31,10 @@ export class UsersService {
   ) {
     this.cognitoIdp = new CognitoIdentityServiceProvider({
       region: 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.aws_access_key_id,
+        secretAccessKey: process.env.aws_secret_access_key,
+      },
     });
     this.clientId = process.env.COGNITO_CLIENT_ID;
     this.clientSecret = process.env.COGNITO_CLIENT_SECRET;
@@ -134,10 +138,10 @@ export class UsersService {
     }
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(email: string): Promise<User> {
     try {
       const user = await this.userRepository.findOne({
-        where: { id },
+        where: { email },
       });
       if (!user) {
         throw new RpcException('User not found');
@@ -220,6 +224,14 @@ export class UsersService {
       if (!user) {
         throw new RpcException('User not found');
       }
+      console.log(
+        'clientid',
+        this.clientId,
+        'secret',
+        this.clientSecret,
+        'token',
+        refreshToken,
+      );
       await this.cognitoIdp
         .revokeToken({
           ClientId: this.clientId,

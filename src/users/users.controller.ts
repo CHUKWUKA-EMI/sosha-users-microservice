@@ -47,8 +47,8 @@ export class UsersController {
 
   @UseFilters(new AllRPCExceptionsFilter())
   @MessagePattern({ role: 'users', cmd: 'findOne' })
-  findOne(@Payload() id: string) {
-    return this.usersService.findOne(id);
+  findOne(@Payload() email: string) {
+    return this.usersService.findOne(email);
   }
 
   @UseFilters(new AllRPCExceptionsFilter())
