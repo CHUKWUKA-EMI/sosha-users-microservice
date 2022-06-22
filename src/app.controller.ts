@@ -48,12 +48,14 @@ export class AppController {
   async callback(@Query('code') code: string, @Res() res: Response) {
     const authData = await this.authService.exchangeGrantCodeForToken(code);
     const resData = await this.authService.VerifyToken(authData.id_token);
+    console.log('resData', resData);
     const userData = {
       firstName: resData['custom:firstName'],
       lastName: resData['custom:lastName'],
       username: resData['custom:firstName'] + resData['custom:lastName'],
       email: resData['email'],
       imgUrl: resData['custom:imageUrl'],
+      social_id: resData['sub'],
     };
     //save userDetails
     await this.userService.saveUserDetails(userData);

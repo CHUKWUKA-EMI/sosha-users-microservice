@@ -72,8 +72,10 @@ export class UsersService {
       if (createCognitoUser.$response.error) {
         throw new RpcException(createCognitoUser.$response.error.message);
       }
-
-      const user = this.userRepository.create(createUserInput);
+      const user = this.userRepository.create({
+        ...createUserInput,
+        social_id: createCognitoUser.UserSub,
+      });
       const errors = await validate(user);
       if (errors.length > 0) {
         throw new RpcException(errors);

@@ -62,6 +62,9 @@ export class User {
   @Column({ nullable: true, default: false })
   isLoggedIn?: boolean;
 
+  @Column({ nullable: true })
+  social_id: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
